@@ -24,7 +24,7 @@
 bool runSensor(void *);
 
 // Global Variables
-MamaDuck duck("TONEDTG5");
+MamaDuck duck("MAMADUCK");
 auto timer = timer_create_default();
 int counter = 1;
 bool setupOK = false;
