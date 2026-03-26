@@ -16,6 +16,9 @@
 #include <Wire.h>
 #include <Adafruit_BMP085.h>
 
+#define XPOWERS_CHIP_AXP2101
+#include <XPowersLib.h>
+
 #ifdef SERIAL_PORT_USBVIRTUAL
 #define Serial SERIAL_PORT_USBVIRTUAL
 #endif
@@ -29,6 +32,7 @@ auto timer = timer_create_default();
 int counter = 1;
 bool setupOK = false;
 bool bmpOK = false;
+bool pmuOK = false;
 
 // Interval in milliseconds between runSensor calls
 const int INTERVAL_MS = 300000;
@@ -39,6 +43,9 @@ const int I2C_SCL = 22;
 
 // BMP180 sensor (Adafruit_BMP085 supports both BMP085 and BMP180)
 Adafruit_BMP085 bmp;
+
+// AXP2101 power management unit
+XPowersPMU PMU;
 
 /**
  * Initializes the MamaDuck and BMP180 sensor.
@@ -91,7 +98,7 @@ void loop() {
  * the counter and free memory. Formats them into a delimited string and
  * transmits via CDP.
  *
- * Message format: {"C":1,"FM":45000,"T":75.7,"P":101325}
+ * Message format: {"C":1,"FM":45000,"T":75.7,"P":101325,"BV":3.85,"BP":72,"CH":true,"BT":32.5}
  *
  * @param unused Unused parameter required by the timer callback signature.
  * @return true Always returns true to keep the timer running.
@@ -99,19 +106,36 @@ void loop() {
 bool runSensor(void *) {
   bool failure;
 
-  char payload[128];
+  // Battery data from AXP2101 PMU
+  float battV = 0;
+  int battPct = 0;
+  bool charging = false;
+  float boardTemp = 0;
+
+  if (pmuOK) {
+    battV = PMU.getBattVoltage() / 1000.0f;
+    battPct = PMU.getBatteryPercent();
+    charging = PMU.getVbusVoltage() > 4000;
+    boardTemp = PMU.getTemperature() * 9.0 / 5.0 + 32.0;
+  }
+
+  char payload[256];
 
   if (bmpOK) {
     float tempF = bmp.readTemperature() * 9.0 / 5.0 + 32.0;
     int32_t pressurePa = bmp.readPressure();
 
     snprintf(payload, sizeof(payload),
-      "{\"C\":%d,\"FM\":%d,\"T\":%.1f,\"P\":%ld}",
-      counter, freeMemory(), tempF, (long)pressurePa);
+      "{\"C\":%d,\"FM\":%d,\"T\":%.1f,\"P\":%ld,"
+      "\"BV\":%.2f,\"BP\":%d,\"CH\":%s,\"BT\":%.1f}",
+      counter, freeMemory(), tempF, (long)pressurePa,
+      battV, battPct, charging ? "true" : "false", boardTemp);
   } else {
     snprintf(payload, sizeof(payload),
-      "{\"C\":%d,\"FM\":%d,\"T\":null,\"P\":null}",
-      counter, freeMemory());
+      "{\"C\":%d,\"FM\":%d,\"T\":null,\"P\":null,"
+      "\"BV\":%.2f,\"BP\":%d,\"CH\":%s,\"BT\":%.1f}",
+      counter, freeMemory(),
+      battV, battPct, charging ? "true" : "false", boardTemp);
   }
 
   std::string message(payload);
