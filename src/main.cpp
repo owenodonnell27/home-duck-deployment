@@ -35,7 +35,7 @@ bool bmpOK = false;
 bool pmuOK = false;
 
 // Interval in milliseconds between runSensor calls
-const int INTERVAL_MS = 300000;
+const int INTERVAL_MS = 600000;
 
 // I2C pins for T-Beam
 const int I2C_SDA = 21;
@@ -69,6 +69,17 @@ void setup() {
     Serial.println("[MAMA] BMP180 initialized OK");
   } else {
     Serial.println("[MAMA] BMP180 not found! Check wiring.");
+  }
+
+  // Initialize AXP2101 PMU
+  if (PMU.begin(Wire, AXP2101_SLAVE_ADDRESS, I2C_SDA, I2C_SCL)) {
+    pmuOK = true;
+    PMU.enableBattDetection();
+    PMU.enableBattVoltageMeasure();
+    PMU.enableTemperatureMeasure();
+    Serial.println("[MAMA] AXP2101 PMU initialized OK");
+  } else {
+    Serial.println("[MAMA] AXP2101 PMU not found!");
   }
 
   timer.every(INTERVAL_MS, runSensor);
