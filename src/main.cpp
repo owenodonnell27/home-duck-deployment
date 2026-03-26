@@ -7,7 +7,7 @@
  * It also relays messages that it receives from other ducks that it has not
  * seen yet.
  * 
- * @date 03-25-2026
+ * @date 03-26-2026
  */
 
 #include <string>
@@ -69,6 +69,17 @@ void setup() {
     Serial.println("[MAMA] BMP180 initialized OK");
   } else {
     Serial.println("[MAMA] BMP180 not found! Check wiring.");
+  }
+
+  // Initialize AXP2101 PMU
+  if (PMU.begin(Wire, AXP2101_SLAVE_ADDRESS, I2C_SDA, I2C_SCL)) {
+    pmuOK = true;
+    PMU.enableBattDetection();
+    PMU.enableBattVoltageMeasure();
+    PMU.enableTemperatureMeasure();
+    Serial.println("[MAMA] AXP2101 PMU initialized OK");
+  } else {
+    Serial.println("[MAMA] AXP2101 PMU not found!");
   }
 
   timer.every(INTERVAL_MS, runSensor);
