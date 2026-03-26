@@ -7,7 +7,7 @@
  * It also relays messages that it receives from other ducks that it has not
  * seen yet.
  * 
- * @date 03-25-2026
+ * @date 03-26-2026
  */
 
 #include <string>
@@ -35,7 +35,7 @@ bool bmpOK = false;
 bool pmuOK = false;
 
 // Interval in milliseconds between runSensor calls
-const int INTERVAL_MS = 600000;
+const int INTERVAL_MS = 300000;
 
 // I2C pins for T-Beam
 const int I2C_SDA = 21;
