@@ -1,11 +1,20 @@
 # Home Duck Deployment
 
-Sends a packet every 5 minutes that contains: counter, free memory, temperature (°F), and barometric pressure (Pa).
+Sends a packet every 5 minutes that contains: 
+- Counter
+- Free memory (bytes)
+- Enviormental temperature (°F)
+- Barometric pressure (Pa)
+- Battery volage (V)
+- Battery percentage (%)
+- Charging (T/F)
+- Board temperature (°F).
 
 ## Requirements List
 
 - LilyGo T-Beam v1.2 SX1262
 - Adafruit BMP180
+- 18650 battery
 
 ## Wire Up
 
