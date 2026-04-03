@@ -15,6 +15,15 @@
 #include <CDP.h>
 #include <Wire.h>
 #include <Adafruit_BMP085.h>
+#include "FastLED.h"
+
+// LED setup
+#define LED_TYPE WS2812
+#define DATA_PIN 4
+#define NUM_LEDS 1
+#define COLOR_ORDER GRB
+#define BRIGHTNESS  128
+CRGB leds[NUM_LEDS];
 
 #define XPOWERS_CHIP_AXP2101
 #include <XPowersLib.h>
@@ -56,6 +65,12 @@ XPowersPMU PMU;
  */
 void setup() {
 
+  // Init LED
+  FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection( TypicalSMD5050 );
+  FastLED.setBrightness(BRIGHTNESS);
+  leds[0] = CRGB::Gold;
+  FastLED.show();
+
   if (duck.setupWithDefaults() != DUCK_ERR_NONE) {
     Serial.println("[MAMA] Failed to setup MamaDuck");
     return;
@@ -86,6 +101,11 @@ void setup() {
 
   setupOK = true;
   Serial.println("[MAMA] Setup OK!");
+
+  setupOK = true;
+  Serial.println("[MAMA] Setup OK!");
+  leds[0] = CRGB::Cyan;
+  FastLED.show();
 }
 
 /**
@@ -161,5 +181,14 @@ bool runSensor(void *) {
   } else {
     Serial.println("[MAMA] runSensor failed.");
   }
+
+  // Flash LED green on detection send
+  leds[0] = CRGB::Green;
+  FastLED.show();
+  delay(500);
+  leds[0] = CRGB::Cyan;
+  FastLED.show();
+
   return true;
+
 }
